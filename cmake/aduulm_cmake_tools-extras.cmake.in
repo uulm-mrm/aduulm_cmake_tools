@@ -52,31 +52,41 @@ macro(find_aduulm_package _pkg_name_)
   endif()
 endmacro()
 
-macro(link_aduulm_package_target _target_ _pkg_name_)
+macro(link_aduulm_package_targets)
+  set(link_aduulm_package_targets_ACCESS PRIVATE)
+  set(options "")
+  set(oneValueArgs TARGET ACCESS)
+  set(multiValueArgs PACKAGE_TARGETS)
+  cmake_parse_arguments(link_aduulm_package_target "${options}" "${oneValueArgs}"
+                          "${multiValueArgs}" ${ARGN} )
+  message("Test")
+  message("${link_aduulm_package_targets_TARGET}")
+  message("${link_aduulm_package_targets_PACKAGE_TARGETS}")
   if(IS_ROS)
   else()
-    add_dependencies(${_target_} ${_pkg_name_})
+    add_dependencies(${link_aduulm_package_targets_TARGET} "${link_aduulm_package_targets_PACKAGE_TARGETS}")
   endif()
-  target_link_libraries(${_target_} PRIVATE ${_pkg_name_})
+  target_link_libraries(${link_aduulm_package_targets_TARGET} ${link_aduulm_package_targets_ACCESS} "${link_aduulm_package_targets_PACKAGE_TARGETS}")
 endmacro()
 
 macro(get_version_string_from_package_xml path)
+  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${path}/package.xml")
+    message(WARNING "Could not extract version info from non-existing file: ${CMAKE_CURRENT_SOURCE_DIR}/${path}/package.xml")
+    return()
+  endif()
+
   execute_process(COMMAND sh -c "grep \"<name>\" package.xml | sed -e 's+ *<name>\\(.*\\)</name>+\\1+'"
-    WORKING_DIRECTORY "${path}"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${path}"
     OUTPUT_VARIABLE package_name
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 
   execute_process(COMMAND sh -c "grep \"<version>\" package.xml | sed -e 's+ *<version>\\(.*\\)</version>+\\1+'"
-    WORKING_DIRECTORY "${path}"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${path}"
     OUTPUT_VARIABLE package_version
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 endmacro()
-
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/package.xml")
-  get_version_string_from_package_xml("${CMAKE_CURRENT_SOURCE_DIR}")
-endif()
 
 macro(show_build_info msg)
 if(IS_ADTF)
