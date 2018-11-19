@@ -4,13 +4,13 @@ endif()
 set(_ADUULM_CMAKE_TOOLS_INCLUDED_ TRUE)
 
 # Set the cmake install path
-@[if DEVELSPACE]@
+if(@DEVELSPACE@)
 # cmake dir in develspace
-list(APPEND CMAKE_MODULE_PATH "@(PROJECT_SOURCE_DIR)/cmake/Modules")
-@[else]@
+list(APPEND CMAKE_MODULE_PATH "@PROJECT_SOURCE_DIR@/cmake/Modules")
+else()
 # cmake dir in installspace
-list(APPEND CMAKE_MODULE_PATH "@(PKG_CMAKE_DIR)/Modules")
-@[end if]@
+list(APPEND CMAKE_MODULE_PATH "@PKG_CMAKE_DIR@/Modules")
+endif()
 
 # colour support
 if (NOT WIN32)
