@@ -33,7 +33,7 @@ endfunction(add_library_path)
 
 ## Armadillo
 if(Armadillo_DIR)
-  add_library_path(armadillo ${Armadillo_DIR}/../../../lib)
+  add_library_path(armadillo ${Armadillo_DIR}/../../../lib:${Armadillo_DIR}/../../../lib/x86_64_linux-gnu)
 endif()
 
 ## BaumerGAPI_DIR
