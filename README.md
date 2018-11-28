@@ -34,6 +34,10 @@ It offers the following commands
 * `link_aduulm_package_targets(TARGET ACCESS PACKAGE_TARGETS)`
 * `show_build_info(msg)`
 
+The package has some automatically invoked features
+* ROS
+  * Environment hooks: Creates `setup.*` files (invoked when sourcing your `install/setup.*` script) to update the LD_LIBRARY_PATH with your current ROS paths to run executbales and libs with the paths from your config. (Currently supported: Armadillo and BaumerGAPI, see `ros/CMakeLists.txt`)
+
 Additionally the following cmake variables are defined
 * ColourReset, ColourBold, ColourRed, ColourGreen, ColourYellow, ColourBlue, ColourMagenta, ColourCyan, ColourWhite, ColourBoldRed, ColourBoldGreen, ColourBoldYellow, ColourBoldBlue, ColourBoldMagenta, ColourBoldCyan, ColourBoldWhite, ColourBuildInfo
 * _ADUULM_CMAKE_TOOLS_INCLUDED_
