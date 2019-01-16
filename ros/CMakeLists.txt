@@ -40,3 +40,8 @@ endif()
 if(BaumerGAPI_DIR)
   add_library_path(baumer ${BaumerGAPI_DIR}/Components/Bin/Systems/GigE)
 endif()
+
+## Tensorflow
+if(Tensorflow_DIR)
+  add_library_path(Tensorflow ${Tensorflow_DIR}/lib)
+endif()
