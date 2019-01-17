@@ -3,7 +3,7 @@ project(aduulm_cmake_tools)
 
 find_package(catkin REQUIRED)
 
-catkin_package(CFG_EXTRAS aduulm_cmake_tools-extras.cmake)
+catkin_package(CFG_EXTRAS aduulm_cmake_tools.cmake)
 
 ## Install all cmake files
 install(DIRECTORY cmake/Modules DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake)
@@ -14,21 +14,21 @@ install(DIRECTORY cmake/Modules DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/
 function(add_library_path LIBRARY_NAME LIBRARY_PATH)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/env-hooks)
   configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/ros/env-hooks/setup_lib.sh.in
-    ${CMAKE_CURRENT_BINARY_DIR}/ros/env-hooks/setup_${LIBRARY_NAME}.sh
+    ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks/setup_lib.sh.in
+    ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/setup_${LIBRARY_NAME}.sh
     @ONLY
   )
   configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/ros/env-hooks/setup_lib.bash.in
-    ${CMAKE_CURRENT_BINARY_DIR}/ros/env-hooks/setup_${LIBRARY_NAME}.bash
+    ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks/setup_lib.bash.in
+    ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/setup_${LIBRARY_NAME}.bash
     @ONLY
   )
   configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/ros/env-hooks/setup_lib.zsh.in
-    ${CMAKE_CURRENT_BINARY_DIR}/ros/env-hooks/setup_${LIBRARY_NAME}.zsh
+    ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks/setup_lib.zsh.in
+    ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/setup_${LIBRARY_NAME}.zsh
     @ONLY
   )
-  catkin_add_env_hooks(setup_${LIBRARY_NAME} SHELLS sh bash zsh DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ros/env-hooks)
+  catkin_add_env_hooks(setup_${LIBRARY_NAME} SHELLS sh bash zsh DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/env-hooks)
 endfunction(add_library_path)
 
 ## Armadillo

@@ -15,8 +15,8 @@ set(aduulm_cmake_tools_VERSION "${aduulm_cmake_tools_VERSION_MAJOR}.${aduulm_cma
 message(STATUS "Using aduulm_cmake_tools, Version ${aduulm_cmake_tools_VERSION}")
 
 configure_file(
-  ${CMAKE_CURRENT_LIST_DIR}/cmake/aduulm_cmake_tools-extras.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/aduulm_cmake_tools-extras.cmake
+  ${CMAKE_CURRENT_LIST_DIR}/../cmake/aduulm_cmake_tools.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/aduulm_cmake_tools.cmake
   @ONLY
 )
-include(${CMAKE_CURRENT_BINARY_DIR}/aduulm_cmake_tools-extras.cmake)
+include(${CMAKE_CURRENT_BINARY_DIR}/aduulm_cmake_tools.cmake)
