@@ -12,6 +12,8 @@ else()
 list(APPEND CMAKE_MODULE_PATH "@PKG_CMAKE_DIR@/Modules")
 endif()
 
+set(ADUULM_CMAKE_TOOLS_DIR "@CMAKE_CURRENT_LIST_DIR@/..")
+
 # colour support
 if (NOT WIN32)
   string(ASCII 27 Esc)
@@ -131,11 +133,7 @@ endif()
 endmacro()
 
 macro(setup_git_hooks)
-  set(HOOKS_PATH "${CMAKE_BINARY_DIR}/../../root/git_hooks")
-  if(EXISTS "${HOOKS_PATH}")
-    add_subdirectory("${HOOKS_PATH}" "${CMAKE_CURRENT_BINARY_DIR}/.hooks")
-  else()
-    message(WARNING "Could not find git hooks. Git hooks are not active.")
-  endif()
+  set(GIT_HOOKS_PATH "${ADUULM_CMAKE_TOOLS_DIR}/git_hooks")
+  add_subdirectory("${GIT_HOOKS_PATH}" "${CMAKE_CURRENT_BINARY_DIR}/.hooks")
   create_git_hook(${ARGN})
 endmacro()
