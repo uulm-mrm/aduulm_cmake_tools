@@ -45,3 +45,8 @@ endif()
 if(Tensorflow_DIR)
   add_library_path(Tensorflow ${Tensorflow_DIR}/lib)
 endif()
+
+## libtorch
+if(Torch_DIR)
+  add_library_path(Torch ${Torch_DIR}/../../../lib)
+endif()
