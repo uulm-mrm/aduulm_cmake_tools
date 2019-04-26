@@ -36,6 +36,11 @@ if(Armadillo_DIR)
   add_library_path(armadillo ${Armadillo_DIR}/../../../lib:${Armadillo_DIR}/../../../lib/x86_64-linux-gnu)
 endif()
 
+## PQXX
+if(PQXX_DIR)
+  add_library_path(pqxx ${PQXX_DIR}/lib)
+endif()
+
 ## BaumerGAPI_DIR
 if(BaumerGAPI_DIR)
   add_library_path(baumer ${BaumerGAPI_DIR}/Components/Bin/Systems/GigE)
