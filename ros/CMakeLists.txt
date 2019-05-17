@@ -6,7 +6,8 @@ find_package(catkin REQUIRED)
 catkin_package(CFG_EXTRAS aduulm_cmake_tools.cmake)
 
 ## Install all cmake files
-install(DIRECTORY cmake/Modules DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake)
+get_filename_component(MODULES_DIR_ABS cmake/Modules REALPATH)
+install(DIRECTORY ${MODULES_DIR_ABS}/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/Modules)
 
 
 ## Define function for adding environment hooks
