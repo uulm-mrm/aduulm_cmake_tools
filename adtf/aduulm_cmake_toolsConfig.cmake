@@ -10,7 +10,7 @@ endif()
 
 set(aduulm_cmake_tools_VERSION_MAJOR 0)
 set(aduulm_cmake_tools_VERSION_MINOR 0)
-set(aduulm_cmake_tools_VERSION_PATCH 1)
+set(aduulm_cmake_tools_VERSION_PATCH 2)
 set(aduulm_cmake_tools_VERSION "${aduulm_cmake_tools_VERSION_MAJOR}.${aduulm_cmake_tools_VERSION_MINOR}.${aduulm_cmake_tools_VERSION_PATCH}")
 message(STATUS "Using aduulm_cmake_tools, Version ${aduulm_cmake_tools_VERSION}")
 

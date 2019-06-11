@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>aduulm_cmake_tools</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>This packages containts various utility scripts for CMake/Catkin projects</description>
   <author>Jan Strohbeck</author>
   <maintainer email="jan.strohbeck@uni-ulm.de">Jan Strohbeck</maintainer>
