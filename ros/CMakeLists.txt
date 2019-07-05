@@ -56,3 +56,8 @@ endif()
 if(Torch_DIR)
   add_library_path(Torch ${Torch_DIR}/../../../lib)
 endif()
+
+## OpenCV
+if(OpenCV_DIR)
+  add_library_path(OpenCV ${OpenCV_DIR}/../../lib)
+endif()
