@@ -13,23 +13,23 @@ install(DIRECTORY ${MODULES_DIR_ABS}/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINA
 ## Define function for adding environment hooks
 ## These environment hooks add the given library path to LD_LIBRARY_PATH when sourcing the workspace setup
 function(add_library_path LIBRARY_NAME LIBRARY_PATH)
-  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/env-hooks)
+  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/env_hooks)
   configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks/setup_lib.sh.in
-    ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/setup_${LIBRARY_NAME}.sh
+    ${CMAKE_CURRENT_SOURCE_DIR}/env_hooks/setup_lib.sh.in
+    ${CMAKE_CURRENT_BINARY_DIR}/env_hooks/setup_${LIBRARY_NAME}.sh
     @ONLY
   )
   configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks/setup_lib.bash.in
-    ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/setup_${LIBRARY_NAME}.bash
+    ${CMAKE_CURRENT_SOURCE_DIR}/env_hooks/setup_lib.bash.in
+    ${CMAKE_CURRENT_BINARY_DIR}/env_hooks/setup_${LIBRARY_NAME}.bash
     @ONLY
   )
   configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks/setup_lib.zsh.in
-    ${CMAKE_CURRENT_BINARY_DIR}/env-hooks/setup_${LIBRARY_NAME}.zsh
+    ${CMAKE_CURRENT_SOURCE_DIR}/env_hooks/setup_lib.zsh.in
+    ${CMAKE_CURRENT_BINARY_DIR}/env_hooks/setup_${LIBRARY_NAME}.zsh
     @ONLY
   )
-  catkin_add_env_hooks(setup_${LIBRARY_NAME} SHELLS sh bash zsh DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/env-hooks)
+  catkin_add_env_hooks(setup_${LIBRARY_NAME} SHELLS sh bash zsh DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/env_hooks)
 endfunction(add_library_path)
 
 ## Armadillo
