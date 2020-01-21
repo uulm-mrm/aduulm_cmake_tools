@@ -15,15 +15,15 @@
 #    POSTGRES_LIBRARY
 
 IF(ANDROID)
-  SET(POSTGRES_INCLUDE_DIR ${POSTGRES_INCLUDE_DIR} CACHE STRING INTERNAL)
-  SET(POSTGRES_LIBRARY ${PG_TMP}/libpq.so CACHE STRING INTERNAL)
+  SET(POSTGRES_INCLUDE_DIR ${POSTGRES_INCLUDE_DIR} CACHE STRING "Postgres include dirs" FORCE)
+  SET(POSTGRES_LIBRARY ${PG_TMP}/libpq.so CACHE STRING "Postgres library path" FORCE)
 ENDIF(ANDROID)
 
 IF(WIN32 AND NOT ANDROID)
   IF (NOT POSTGRES_INCLUDE_DIR)
-    FIND_PATH(POSTGRES_INCLUDE_DIR libpq-fe.h 
-      /usr/local/include 
-      /usr/include 
+    FIND_PATH(POSTGRES_INCLUDE_DIR libpq-fe.h
+      /usr/local/include
+      /usr/include
       c:/msys/local/include
       "$ENV{LIB_DIR}/include/postgresql"
       "$ENV{LIB_DIR}/include"
@@ -31,18 +31,18 @@ IF(WIN32 AND NOT ANDROID)
   ENDIF (NOT POSTGRES_INCLUDE_DIR)
 
   IF (NOT POSTGRES_LIBRARY)
-    FIND_LIBRARY(POSTGRES_LIBRARY NAMES pq libpq libpqdll PATHS 
-      /usr/local/lib 
-      /usr/lib 
+    FIND_LIBRARY(POSTGRES_LIBRARY NAMES pq libpq libpqdll PATHS
+      /usr/local/lib
+      /usr/lib
       c:/msys/local/lib
       "$ENV{LIB_DIR}/lib"
       )
   ENDIF (NOT POSTGRES_LIBRARY)
 
 ELSE(WIN32)
-  IF(UNIX) 
+  IF(UNIX)
 
-    SET(POSTGRES_CONFIG_PREFER_PATH "$ENV{POSTGRES_HOME}/bin" CACHE STRING "preferred path to PG (pg_config)")
+    SET(POSTGRES_CONFIG_PREFER_PATH "$ENV{POSTGRES_HOME}/bin" CACHE STRING "preferred path to PG (pg_config)" FORCE)
     FIND_PROGRAM(POSTGRES_CONFIG pg_config
       ${POSTGRES_CONFIG_PREFER_PATH}
       /usr/local/pgsql/bin/
@@ -50,24 +50,21 @@ ELSE(WIN32)
       /usr/bin/
       )
     # MESSAGE("DBG POSTGRES_CONFIG ${POSTGRES_CONFIG}")
-    
-    IF (POSTGRES_CONFIG) 
+
+    IF (POSTGRES_CONFIG)
       # set INCLUDE_DIR
-      EXEC_PROGRAM(${POSTGRES_CONFIG}
-        ARGS --includedir
-        OUTPUT_VARIABLE PG_TMP)
-      SET(POSTGRES_INCLUDE_DIR ${PG_TMP} CACHE STRING INTERNAL)
+      execute_process(COMMAND /bin/bash -c "LANG=C ${POSTGRES_CONFIG} --includedir"
+        OUTPUT_VARIABLE PG_TMP OUTPUT_STRIP_TRAILING_WHITESPACE)
+      SET(POSTGRES_INCLUDE_DIR ${PG_TMP} CACHE STRING "Postgres include dirs" FORCE)
 
       # set LIBRARY_DIR
-      EXEC_PROGRAM(${POSTGRES_CONFIG}
-        ARGS --libdir
-        OUTPUT_VARIABLE PG_TMP)
+      execute_process(COMMAND /bin/bash -c "LANG=C ${POSTGRES_CONFIG} --libdir"
+        OUTPUT_VARIABLE PG_TMP OUTPUT_STRIP_TRAILING_WHITESPACE)
       IF (APPLE)
-        SET(POSTGRES_LIBRARY ${PG_TMP}/libpq.dylib CACHE STRING INTERNAL)
+        SET(POSTGRES_LIBRARY ${PG_TMP}/libpq.dylib CACHE STRING "Postgres libraries" FORCE)
       ELSEIF (CYGWIN)
-        EXEC_PROGRAM(${POSTGRES_CONFIG}
-        ARGS --libs
-        OUTPUT_VARIABLE PG_TMP)
+        execute_process(COMMAND /bin/bash -c "LANG=C ${POSTGRES_CONFIG} --libs"
+          OUTPUT_VARIABLE PG_TMP OUTPUT_STRIP_TRAILING_WHITESPACE)
 
         STRING(REGEX MATCHALL "[-][L]([^ ;])+" _LDIRS "${PG_TMP}")
         STRING(REGEX MATCHALL "[-][l]([^ ;])+" _LLIBS "${PG_TMP}")
@@ -96,7 +93,7 @@ ELSE(WIN32)
         ENDFOREACH(_LIBNAME ${_LIBS})
 
       ELSE (CYGWIN)
-        SET(POSTGRES_LIBRARY ${PG_TMP}/libpq.so CACHE STRING INTERNAL)
+        SET(POSTGRES_LIBRARY ${PG_TMP}/libpq.so CACHE STRING "Postgres library path" FORCE)
       ENDIF (APPLE)
     ENDIF(POSTGRES_CONFIG)
 
