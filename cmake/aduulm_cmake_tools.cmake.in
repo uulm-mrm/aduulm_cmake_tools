@@ -18,6 +18,9 @@ endif()
 
 set(ADUULM_CMAKE_TOOLS_DIR "@CMAKE_CURRENT_LIST_DIR@/..")
 
+# Set IS_ROS_DEVEL var
+STRING(REGEX MATCH "/devel$" IS_ROS_DEVEL "${CMAKE_INSTALL_PREFIX}")
+
 # colour support
 if (NOT WIN32)
   string(ASCII 27 Esc)
