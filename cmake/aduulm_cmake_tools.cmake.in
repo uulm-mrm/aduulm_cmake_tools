@@ -44,6 +44,21 @@ if (NOT WIN32)
   set(ColourBuildInfo "${ColourBoldBlue}")
 endif()
 
+# Output directories
+set(INCLUDE_INSTALL_DIR include/ CACHE STRING "Path to installed include directory")
+set(LIB_INSTALL_DIR lib/ CACHE STRING "Path to installed lib directory")
+set(BIN_INSTALL_DIR bin/ CACHE STRING "Path to installed bin directory")
+set(SHARE_INSTALL_DIR share/ CACHE STRING "Path to installed share directory")
+
+find_package(PythonInterp)
+
+if(PYTHONINTERP_FOUND)
+  message(STATUS "Using Python version " ${PYTHON_VERSION_STRING} " with executable " ${PYTHON_EXECUTABLE})
+  set(PYTHON_INSTALL_DIR ${LIB_INSTALL_DIR}/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/dist-packages)
+else()
+  message(WARNING "Python components not found, corresponding install directories are not set")
+endif()
+
 macro(find_aduulm_package _pkg_name_)
   if(IS_ROS)
     find_package(${_pkg_name_} ${ARGN})
