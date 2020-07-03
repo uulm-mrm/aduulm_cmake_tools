@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+# generated from $(find source_library_paths)/env-hooks/setup.sh.in
+
+if ! echo "$PATH" | grep -q "@DIR_PATH@"; then
+	export PATH=@DIR_PATH@:$PATH
+fi
