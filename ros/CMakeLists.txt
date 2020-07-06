@@ -64,12 +64,12 @@ endif()
 
 ## Define function for adding environment hooks
 ## These environment hooks add the given path to PATH when sourcing the workspace setup
-function(add_executable_path DIR_NAME DIR_PATH)
+function(add_executable_path DIR_NAME DIR_PATH_DEVEL DIR_PATH_INSTALL)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/env_hooks)
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/env_hooks/setup_path.sh.in
-    ${CMAKE_CURRENT_BINARY_DIR}/env_hooks/setup_${DIR_NAME}.sh
-    @ONLY
+    ${CMAKE_CURRENT_BINARY_DIR}/env_hooks/setup_${DIR_NAME}.sh.in
+    COPYONLY
   )
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/env_hooks/setup_path.bash.in
@@ -94,9 +94,4 @@ if(PYTHON_VERSION AND PYTHON_EXECUTABLE)
 endif()
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/aduulm_symlinks DESTINATION bin)
-STRING(REGEX MATCH "/devel$" IS_ROS_DEVEL "${cmake_path}")
-if(IS_ROS_DEVEL)
-  add_executable_path(symlinks ${CMAKE_CURRENT_BINARY_DIR}/aduulm_symlinks)
-else()
-  add_executable_path(symlinks ${CMAKE_INSTALL_PREFIX}/bin/aduulm_symlinks)
-endif()
+add_executable_path(symlinks ${CMAKE_CURRENT_BINARY_DIR}/aduulm_symlinks ${CMAKE_INSTALL_PREFIX}/bin/aduulm_symlinks)
