@@ -62,6 +62,11 @@ if(OpenCV_DIR)
   add_library_path(OpenCV ${OpenCV_DIR}/../../lib)
 endif()
 
+## TRITON
+if(TRITON_DIR)
+  add_library_path(TRITON ${TRITON_DIR}/lib)
+endif()
+
 ## Define function for adding environment hooks
 ## These environment hooks add the given path to PATH when sourcing the workspace setup
 function(add_executable_path DIR_NAME DIR_PATH_DEVEL DIR_PATH_INSTALL)
