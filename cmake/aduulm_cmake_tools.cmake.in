@@ -54,7 +54,11 @@ find_package(PythonInterp)
 
 if(PYTHONINTERP_FOUND)
   message(STATUS "Using Python version " ${PYTHON_VERSION_STRING} " with executable " ${PYTHON_EXECUTABLE})
-  set(PYTHON_INSTALL_DIR ${LIB_INSTALL_DIR}/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/dist-packages)
+  if(${PYTHON_VERSION_MAJOR} MATCHES "2")
+    set(PYTHON_INSTALL_DIR ${LIB_INSTALL_DIR}/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/dist-packages)
+  else()
+    set(PYTHON_INSTALL_DIR ${LIB_INSTALL_DIR}/python${PYTHON_VERSION_MAJOR}/dist-packages)
+  endif()
 else()
   message(WARNING "Python components not found, corresponding install directories are not set")
 endif()
@@ -157,16 +161,3 @@ macro(setup_git_hooks)
   add_subdirectory("${GIT_HOOKS_PATH}" "${CMAKE_CURRENT_BINARY_DIR}/.hooks")
   create_git_hook(${ARGN})
 endmacro()
-
-if(IS_ROS AND CATKIN_GLOBAL_PYTHON_DESTINATION)
-  # make PYTHON_INSTALL_DIR equal CATKIN_GLOBAL_PYTHON_DESTINATION, so that packages built with
-  # catkin_python_setup() and setup.py get installed into the correct folder on ROS melodic built
-  # with python3. Otherwise, PYTHON_INSTALL_DIR would equal lib/python3.6/dist-packages, whereas
-  # CATKIN_GLOBAL_PYTHON_DESTINATION would equal lib/python3/dist-packages. As
-  # {devel,install}/lib/python3.6/dist-packages paths are not added to PYTHONPATH by sourcing
-  # setup.bash/zsh, the built python modules would not be found.
-  # This can be removed when support for ROS melodic built with python3 is discontinued.
-  # Should not cause problems with ROS melodic with python2 or ROS noetic, as these variables
-  # should already be equal.
-  set(PYTHON_INSTALL_DIR ${CATKIN_GLOBAL_PYTHON_DESTINATION})
-endif()
