@@ -59,13 +59,25 @@ endif()
 
 ## OpenCV
 if(OpenCV_DIR)
-  add_library_path(OpenCV ${OpenCV_DIR}/../../lib)
+  STRING(REGEX MATCH "/share/" OPENCV_CMAKE_IS_SHARE "${OpenCV_DIR}")
+  if(OPENCV_CMAKE_IS_SHARE)
+    # path is share/Opencv/
+    add_library_path(OpenCV ${OpenCV_DIR}/../../lib)
+  else()
+    # Path is lib/cmake/OpenCV
+    add_library_path(OpenCV ${OpenCV_DIR}/../..)
+  endif()
 endif()
 
 ## TRITON
 if(TRITON_DIR)
   add_library_path(TRITON ${TRITON_DIR}/lib)
 endif()
+
+if(EXISTS /opt/intel/mkl/lib/intel64)
+  add_library_path(MKL /opt/intel/mkl/lib/intel64)
+endif()
+
 
 ## Define function for adding environment hooks
 ## These environment hooks add the given path to PATH when sourcing the workspace setup
