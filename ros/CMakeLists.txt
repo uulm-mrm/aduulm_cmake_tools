@@ -74,6 +74,11 @@ if(TRITON_DIR)
   add_library_path(TRITON ${TRITON_DIR}/lib)
 endif()
 
+## Torch
+if(Torch_DIR)
+  add_library_path(Torch ${Torch_DIR}/lib)
+endif()
+
 if(EXISTS /opt/intel/mkl/lib/intel64)
   add_library_path(MKL /opt/intel/mkl/lib/intel64)
 endif()
