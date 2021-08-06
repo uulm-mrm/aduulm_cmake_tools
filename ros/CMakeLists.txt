@@ -100,15 +100,3 @@ function(add_executable_path DIR_NAME DIR_PATH_DEVEL DIR_PATH_INSTALL)
   )
   catkin_add_env_hooks(setup_${DIR_NAME} SHELLS sh bash zsh DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/env_hooks)
 endfunction()
-
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/aduulm_symlinks)
-function(add_symlink name executable)
-  add_custom_target(link_${name} ALL COMMAND ${CMAKE_COMMAND} -E create_symlink "${executable}" ${CMAKE_CURRENT_BINARY_DIR}/aduulm_symlinks/${name})
-endfunction()
-
-if(PYTHON_VERSION AND PYTHON_EXECUTABLE)
-  add_symlink(python "${PYTHON_EXECUTABLE}")
-endif()
-
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/aduulm_symlinks DESTINATION bin)
-add_executable_path(symlinks ${CMAKE_CURRENT_BINARY_DIR}/aduulm_symlinks ${CMAKE_INSTALL_PREFIX}/bin/aduulm_symlinks)
