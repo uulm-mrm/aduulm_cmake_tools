@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>aduulm_cmake_tools</name>
+  <version>0.0.2</version>
+  <description>This packages containts various utility scripts for CMake/Catkin projects</description>
+  <author>Jan Strohbeck</author>
+  <maintainer email="jan.strohbeck@uni-ulm.de">Jan Strohbeck</maintainer>
+  <license>Proprietary, (c) 2018 Ulm University, Institute of Measurement, Control and Microtechnology</license>
+
+  <!-- tool for building workspace -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- dependencies of library -->
+
+  <!-- dependencies of ros -->
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>
