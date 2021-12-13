@@ -3,14 +3,18 @@ if(_ADUULM_CMAKE_TOOLS_INCLUDED_)
 endif()
 set(_ADUULM_CMAKE_TOOLS_INCLUDED_ TRUE)
 
-if(IS_ROS)
 # Set the cmake install path
-  if("@DEVELSPACE@" STREQUAL "TRUE")
-    # cmake dir in develspace
-    list(APPEND CMAKE_MODULE_PATH "@PROJECT_SOURCE_DIR@/cmake/Modules/")
+if(IS_ROS)
+  if (NOT @DEVELSPACE@ STREQUAL "")
+      if("@DEVELSPACE@" STREQUAL "TRUE")
+        # cmake dir in develspace
+        list(APPEND CMAKE_MODULE_PATH "@PROJECT_SOURCE_DIR@/cmake/Modules/")
+      else()
+        # cmake dir in installspace
+        list(APPEND CMAKE_MODULE_PATH "@PKG_CMAKE_DIR@/Modules/")
+      endif()
   else()
-    # cmake dir in installspace
-    list(APPEND CMAKE_MODULE_PATH "@PKG_CMAKE_DIR@/Modules/")
+    list(APPEND CMAKE_MODULE_PATH "@CMAKE_INSTALL_PREFIX@/share/aduulm_cmake_tools/cmake/Modules/")
   endif()
 else()
   list(APPEND CMAKE_MODULE_PATH "@CMAKE_CURRENT_LIST_DIR@/../cmake/Modules/")
@@ -50,17 +54,27 @@ set(LIB_INSTALL_DIR lib/ CACHE STRING "Path to installed lib directory")
 set(BIN_INSTALL_DIR bin/ CACHE STRING "Path to installed bin directory")
 set(SHARE_INSTALL_DIR share/ CACHE STRING "Path to installed share directory")
 
-find_package(PythonInterp)
+find_package(ament_cmake QUIET)
+set(IS_ROS2 FALSE)
+if (ament_cmake_FOUND)
+  set(IS_ROS2 TRUE)
+endif()
 
-if(PYTHONINTERP_FOUND)
-  message(STATUS "Using Python version " ${PYTHON_VERSION_STRING} " with executable " ${PYTHON_EXECUTABLE})
-  if(${PYTHON_VERSION_MAJOR} MATCHES "2")
-    set(PYTHON_INSTALL_DIR ${LIB_INSTALL_DIR}/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/dist-packages)
-  else()
-    set(PYTHON_INSTALL_DIR ${LIB_INSTALL_DIR}/python${PYTHON_VERSION_MAJOR}/dist-packages)
-  endif()
+if(IS_ROS2)
+  # set(PYTHON_INSTALL_DIR lib/python3.8/site-packages)
+  ament_get_python_install_dir(PYTHON_INSTALL_DIR)
 else()
-  message(WARNING "Python components not found, corresponding install directories are not set")
+  find_package(PythonInterp QUIET)
+  if(PYTHONINTERP_FOUND)
+    message(STATUS "Using Python version " ${PYTHON_VERSION_STRING} " with executable " ${PYTHON_EXECUTABLE})
+    if(${PYTHON_VERSION_MAJOR} MATCHES "2")
+      set(PYTHON_INSTALL_DIR ${LIB_INSTALL_DIR}/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/dist-packages)
+    else()
+      set(PYTHON_INSTALL_DIR ${LIB_INSTALL_DIR}/python${PYTHON_VERSION_MAJOR}/dist-packages)
+    endif()
+  else()
+    message(WARNING "Python components not found, corresponding install directories are not set")
+  endif()
 endif()
 
 macro(find_aduulm_package _pkg_name_)
@@ -160,4 +174,269 @@ macro(setup_git_hooks)
   set(GIT_HOOKS_PATH "${ADUULM_CMAKE_TOOLS_DIR}/git_hooks")
   add_subdirectory("${GIT_HOOKS_PATH}" "${CMAKE_CURRENT_BINARY_DIR}/.hooks")
   create_git_hook(${ARGN})
+endmacro()
+
+
+
+
+
+
+# ROS2 convenience macros
+
+macro(aduulm_init_ros2_package)
+  find_package(ament_cmake REQUIRED)
+  find_package(ament_cmake_auto REQUIRED)
+  find_package(ament_cmake_python REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  get_version_string_from_package_xml(.)
+  ament_auto_find_build_dependencies()
+endmacro()
+
+macro(aduulm_generate_ros2_messages target)
+  # Manually glob for files
+  file(GLOB ${PROJECT_NAME}_interface_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} msg/**/*.msg msg/*.msg srv/**/*.srv srv/*.srv action/**/*.action action/*.action)
+  rosidl_generate_interfaces(
+     ${target}
+     ${${PROJECT_NAME}_interface_files}
+     ${ARGN})
+endmacro()
+
+macro(aduulm_target_link_messages target interface_target)
+  # Sadly, rosidl_target_interfaces uses non-keyword link-libraries: https://github.com/ros2/rosidl/issues/400
+  # The following was also not merged yet: https://github.com/ros2/rosidl/pull/606
+
+  set(typesupport_target ${interface_target}__rosidl_typesupport_cpp)
+  add_dependencies(${target} ${interface_target})
+  get_target_property(include_directories ${typesupport_target} INTERFACE_INCLUDE_DIRECTORIES)
+  target_include_directories(${target} PUBLIC ${include_directories})
+  target_link_libraries(${target} PUBLIC ${typesupport_target})
+endmacro()
+
+macro(aduulm_add_ros2_library target)
+  cmake_parse_arguments(ARG
+    "STATIC;SHARED;MODULE;EXCLUDE_FROM_ALL"
+    "DIRECTORY"
+    ""
+    ${ARGN})
+  if(NOT ARG_DIRECTORY AND NOT ARG_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "aduulm_add_ros2_library() called without any source "
+      "files and without a DIRECTORY argument")
+  endif()
+
+  set(_source_files "")
+  if(ARG_DIRECTORY)
+    # glob all source files
+    file(
+      GLOB_RECURSE
+      _source_files
+      RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+      "${ARG_DIRECTORY}/*.c"
+      "${ARG_DIRECTORY}/*.cc"
+      "${ARG_DIRECTORY}/*.cpp"
+      "${ARG_DIRECTORY}/*.cxx"
+      "${ARG_DIRECTORY}/*.cu"
+    )
+    if(NOT _source_files)
+      message(FATAL_ERROR "ament_auto_add_library() no source files found in "
+        "directory '${CMAKE_CURRENT_SOURCE_DIR}/${ARG_DIRECTORY}'")
+    endif()
+  endif()
+
+  # parse again to "remove" custom arguments
+  cmake_parse_arguments(ARG "" "DIRECTORY" "" ${ARGN})
+  add_library(${target} ${ARG_UNPARSED_ARGUMENTS} ${_source_files})
+  target_compile_definitions(${target} PUBLIC "-D${package_name}_VERSION=\"${package_version}\"")
+
+  target_include_directories(${target}
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:include>
+  )
+  ament_target_dependencies(${target}
+    SYSTEM PUBLIC
+      ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS}
+  )
+
+  list(APPEND ${PROJECT_NAME}_LIBRARIES "${target}")
+
+  if(NOT ${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+    set(${PROJECT_NAME}_LIBRARIES ${${PROJECT_NAME}_LIBRARIES} PARENT_SCOPE)
+  endif()
+endmacro()
+
+
+macro(aduulm_add_ros2_executable target)
+  cmake_parse_arguments(ARG
+    ""
+    "DIRECTORY"
+    ""
+    ${ARGN})
+  if(NOT ARG_DIRECTORY AND NOT ARG_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "aduulm_add_ros2_library() called without any source "
+      "files and without a DIRECTORY argument")
+  endif()
+
+  set(_source_files "")
+  if(ARG_DIRECTORY)
+    # glob all source files
+    file(
+      GLOB_RECURSE
+      _source_files
+      RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+      "${ARG_DIRECTORY}/*.c"
+      "${ARG_DIRECTORY}/*.cc"
+      "${ARG_DIRECTORY}/*.cpp"
+      "${ARG_DIRECTORY}/*.cxx"
+      "${ARG_DIRECTORY}/*.cu"
+    )
+    if(NOT _source_files)
+      message(FATAL_ERROR "ament_auto_add_library() no source files found in "
+        "directory '${CMAKE_CURRENT_SOURCE_DIR}/${ARG_DIRECTORY}'")
+    endif()
+  endif()
+
+  # parse again to "remove" custom arguments
+  cmake_parse_arguments(ARG "" "DIRECTORY" "" ${ARGN})
+  add_executable(${target} ${ARG_UNPARSED_ARGUMENTS} ${_source_files})
+  target_compile_definitions(${target} PUBLIC "-D${package_name}_VERSION=\"${package_version}\"")
+
+  target_include_directories(${target}
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:include>
+  )
+  ament_target_dependencies(${target}
+    SYSTEM PUBLIC
+      ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS}
+  )
+
+  list(APPEND ${PROJECT_NAME}_EXECUTABLES "${target}")
+
+  if(NOT ${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+    set(${PROJECT_NAME}_EXECUTABLES ${${PROJECT_NAME}_EXECUTABLES} PARENT_SCOPE)
+  endif()
+endmacro()
+
+macro(aduulm_add_ros2_python_binding target)
+  cmake_parse_arguments(ARG "" "" "" ${ARGN})
+  if(NOT ARG_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR
+      "aduulm_add_ros2_python_binding() must be invoked with at least one source file")
+  endif()
+
+  find_package(pybind11 REQUIRED)
+  pybind11_add_module(${target} ${ARG_UNPARSED_ARGUMENTS})
+
+  target_include_directories(${target}
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:include>
+  )
+  ament_target_dependencies(${target}
+    SYSTEM PUBLIC
+      ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS}
+  )
+
+  install(TARGETS ${target}
+    LIBRARY DESTINATION lib/python3.8/site-packages/ COMPONENT Runtime
+  )
+endmacro()
+
+macro(aduulm_install_ros2_python_code dirname)
+  ament_python_install_package(${dirname} ${ARGN})
+endmacro()
+
+macro(aduulm_create_ros2_package)
+  cmake_parse_arguments(__ARG "INSTALL_TO_PATH" "" "INSTALL_TO_SHARE" ${ARGN})
+  # passing all unparsed arguments to ament_package()
+
+  # export all found build dependencies which are also run dependencies
+  set(_run_depends
+    ${${PROJECT_NAME}_BUILD_EXPORT_DEPENDS}
+    ${${PROJECT_NAME}_BUILDTOOL_EXPORT_DEPENDS}
+    ${${PROJECT_NAME}_EXEC_DEPENDS})
+  foreach(_dep
+      ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS}
+      ${${PROJECT_NAME}_FOUND_BUILDTOOL_DEPENDS})
+    if(_dep IN_LIST _run_depends)
+      ament_export_dependencies("${_dep}")
+    endif()
+  endforeach()
+
+  # export and install include directory of this package if it has one
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include")
+    ament_export_include_directories("include")
+    install(DIRECTORY include/ DESTINATION include)
+  endif()
+
+  # export and install all libraries
+  if(NOT "${${PROJECT_NAME}_LIBRARIES}" STREQUAL "")
+    ament_export_libraries(${${PROJECT_NAME}_LIBRARIES})
+    ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+    install(
+      TARGETS ${${PROJECT_NAME}_LIBRARIES}
+      EXPORT export_${PROJECT_NAME}
+      ARCHIVE DESTINATION lib
+      LIBRARY DESTINATION lib
+      RUNTIME DESTINATION bin
+    )
+  endif()
+
+  # install all executables
+  if(NOT "${${PROJECT_NAME}_EXECUTABLES}" STREQUAL "")
+    if(__ARG_INSTALL_TO_PATH)
+      set(_destination "bin")
+    else()
+      set(_destination "lib/${PROJECT_NAME}")
+    endif()
+    install(
+      TARGETS ${${PROJECT_NAME}_EXECUTABLES}
+      DESTINATION ${_destination}
+    )
+  endif()
+
+  # install directories to share
+  foreach(_dir ${__ARG_INSTALL_TO_SHARE})
+    install(
+      DIRECTORY "${_dir}"
+      DESTINATION "share/${PROJECT_NAME}"
+    )
+  endforeach()
+
+  ament_package(${__ARG_UNPARSED__ARGUMENTS})
+endmacro()
+
+macro(aduulm_add_ros2_test target)
+  _ament_cmake_gtest_find_gtest()
+  if(GTEST_FOUND)
+    add_executable("${target}" ${ARGN})
+    target_include_directories("${target}" SYSTEM PUBLIC "${GTEST_INCLUDE_DIRS}")
+    target_link_libraries("${target}" PUBLIC ${GTEST_MAIN_LIBRARIES})
+    target_link_libraries("${target}" PUBLIC ${GTEST_LIBRARIES})
+    if(NOT WIN32)
+      set(THREADS_PREFER_PTHREAD_FLAG ON)
+      find_package(Threads REQUIRED)
+      target_link_libraries("${target}" PUBLIC Threads::Threads)
+    endif()
+
+    set(executable "$<TARGET_FILE:${target}>")
+    set(result_file "${AMENT_TEST_RESULTS_DIR}/${PROJECT_NAME}/${target}.gtest.xml")
+    set(cmd
+      "${executable}"
+      "--gtest_output=xml:${result_file}")
+
+    ament_add_test(
+      "${target}"
+      COMMAND ${cmd}
+      OUTPUT_FILE "${CMAKE_BINARY_DIR}/ament_cmake_gtest/${target}.txt"
+      RESULT_FILE "${result_file}"
+    )
+    set_tests_properties(
+      "${target}"
+      PROPERTIES
+      REQUIRED_FILES "${executable}"
+      LABELS "gtest"
+    )
+  endif()
 endmacro()
