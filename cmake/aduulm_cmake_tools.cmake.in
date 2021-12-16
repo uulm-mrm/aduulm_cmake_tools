@@ -262,7 +262,7 @@ macro(aduulm_add_ros2_library target)
 
   target_include_directories(${target}
     PUBLIC
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:include>
   )
   ament_target_dependencies(${target}
@@ -323,7 +323,7 @@ macro(aduulm_add_ros2_executable target)
 
   target_include_directories(${target}
     PUBLIC
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:include>
   )
   ament_target_dependencies(${target}
@@ -359,7 +359,7 @@ macro(aduulm_add_ros2_python_binding target)
 
   target_include_directories(${target}
     PUBLIC
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:include>
   )
   ament_target_dependencies(${target}
