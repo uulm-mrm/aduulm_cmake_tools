@@ -213,6 +213,18 @@ macro(aduulm_target_link_messages target interface_target)
   target_link_libraries(${target} PUBLIC ${typesupport_target})
 endmacro()
 
+macro(aduulm_register_public_dependency_target target)
+  list(APPEND ${PROJECT_NAME}_TARGET_DEPENDENCIES ${target})
+endmacro()
+
+macro(aduulm_register_public_dependency_includes)
+  list(APPEND ${PROJECT_NAME}_EXTRA_INCS ${ARGN})
+endmacro()
+
+macro(aduulm_register_public_dependency_libraries)
+  list(APPEND ${PROJECT_NAME}_EXTRA_LIBS ${ARGN})
+endmacro()
+
 macro(aduulm_add_ros2_library target)
   cmake_parse_arguments(ARG
     "STATIC;SHARED;MODULE;EXCLUDE_FROM_ALL"
@@ -257,6 +269,15 @@ macro(aduulm_add_ros2_library target)
     SYSTEM PUBLIC
       ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS}
   )
+  if(NOT "${${PROJECT_NAME}_TARGET_DEPENDENCIES}" STREQUAL "")
+    target_link_libraries(${target} PUBLIC ${${PROJECT_NAME}_TARGET_DEPENDENCIES})
+  endif()
+  if(NOT "${${PROJECT_NAME}_EXTRA_LIBS}" STREQUAL "")
+    target_link_libraries(${target} PUBLIC ${${PROJECT_NAME}_EXTRA_LIBS})
+  endif()
+  if(NOT "${${PROJECT_NAME}_EXTRA_INCS}" STREQUAL "")
+    target_include_directories(${target} SYSTEM PUBLIC ${${PROJECT_NAME}_EXTRA_INCS})
+  endif()
 
   list(APPEND ${PROJECT_NAME}_LIBRARIES "${target}")
 
@@ -264,7 +285,6 @@ macro(aduulm_add_ros2_library target)
     set(${PROJECT_NAME}_LIBRARIES ${${PROJECT_NAME}_LIBRARIES} PARENT_SCOPE)
   endif()
 endmacro()
-
 
 macro(aduulm_add_ros2_executable target)
   cmake_parse_arguments(ARG
@@ -310,6 +330,15 @@ macro(aduulm_add_ros2_executable target)
     SYSTEM PUBLIC
       ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS}
   )
+  if(NOT "${${PROJECT_NAME}_TARGET_DEPENDENCIES}" STREQUAL "")
+    target_link_libraries(${target} PUBLIC ${${PROJECT_NAME}_TARGET_DEPENDENCIES})
+  endif()
+  if(NOT "${${PROJECT_NAME}_EXTRA_LIBS}" STREQUAL "")
+    target_link_libraries(${target} PUBLIC ${${PROJECT_NAME}_EXTRA_LIBS})
+  endif()
+  if(NOT "${${PROJECT_NAME}_EXTRA_INCS}" STREQUAL "")
+    target_include_directories(${target} SYSTEM PUBLIC ${${PROJECT_NAME}_EXTRA_INCS})
+  endif()
 
   list(APPEND ${PROJECT_NAME}_EXECUTABLES "${target}")
 
@@ -365,14 +394,48 @@ macro(aduulm_create_ros2_package)
   endforeach()
 
   # export and install include directory of this package if it has one
+  set(${PROJECT_NAME}_INCS_TMP "")
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include")
-    ament_export_include_directories("include")
+    list(APPEND ${PROJECT_NAME}_INCS_TMP "include")
     install(DIRECTORY include/ DESTINATION include)
   endif()
+  list(APPEND ${PROJECT_NAME}_INCS_TMP ${${PROJECT_NAME}_EXTRA_INCS})
 
   # export and install all libraries
+  list(APPEND ${PROJECT_NAME}_LIBRARIES_TEST ${${PROJECT_NAME}_LIBRARIES})
+  foreach(_dep ${${PROJECT_NAME}_TARGET_DEPENDENCIES} ${${PROJECT_NAME}_EXTRA_LIBS})
+    if (NOT TARGET ${_dep})
+      list(APPEND ${PROJECT_NAME}_LIBRARIES_TEST ${_dep})
+      continue()
+    endif()
+
+    get_target_property(_incs ${_dep} INTERFACE_INCLUDE_DIRECTORIES)
+    foreach(_inc ${_incs})
+      if("${_inc}" MATCHES "\\$")
+        message("INTERFACE_INCLUDE_DIRECTORIES contains generator expressions, these parts will be skipped: ${_inc}")
+      else()
+        list(APPEND ${PROJECT_NAME}_INCS_TMP ${_inc})
+      endif()
+    endforeach()
+
+    get_target_property(_type ${_dep} TYPE)
+    if (NOT ${_type} STREQUAL "INTERFACE_LIBRARY")
+      list(APPEND ${PROJECT_NAME}_LIBRARIES_TEST ${_dep})
+      continue()
+    endif()
+
+    get_target_property(_libs ${_dep} INTERFACE_LINK_LIBRARIES)
+    foreach(_lib ${_libs})
+      if("${_lib}" MATCHES "\\$")
+        message("INTERFACE_LINK_LIBRARIES contains generator expressions, these parts will be skipped: ${_lib}")
+      else()
+        list(APPEND ${PROJECT_NAME}_LIBRARIES_TEST ${_lib})
+      endif()
+    endforeach()
+  endforeach()
+
+  ament_export_libraries(${${PROJECT_NAME}_LIBRARIES_TEST})
   if(NOT "${${PROJECT_NAME}_LIBRARIES}" STREQUAL "")
-    ament_export_libraries(${${PROJECT_NAME}_LIBRARIES})
     ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
     install(
       TARGETS ${${PROJECT_NAME}_LIBRARIES}
@@ -382,6 +445,8 @@ macro(aduulm_create_ros2_package)
       RUNTIME DESTINATION bin
     )
   endif()
+
+  ament_export_include_directories(${${PROJECT_NAME}_INCS_TMP})
 
   # install all executables
   if(NOT "${${PROJECT_NAME}_EXECUTABLES}" STREQUAL "")
