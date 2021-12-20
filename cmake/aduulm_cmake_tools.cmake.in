@@ -262,7 +262,7 @@ macro(aduulm_add_ros2_library target)
 
   target_include_directories(${target}
     PUBLIC
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:include>
   )
   ament_target_dependencies(${target}
@@ -323,7 +323,7 @@ macro(aduulm_add_ros2_executable target)
 
   target_include_directories(${target}
     PUBLIC
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:include>
   )
   ament_target_dependencies(${target}
@@ -359,7 +359,7 @@ macro(aduulm_add_ros2_python_binding target)
 
   target_include_directories(${target}
     PUBLIC
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:include>
   )
   ament_target_dependencies(${target}
@@ -377,6 +377,10 @@ macro(aduulm_install_ros2_python_code dirname)
 endmacro()
 
 macro(aduulm_create_ros2_package)
+  if(NOT ${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+    message(FATAL_ERROR "macro aduulm_create_ros2_package() may only be called from project root directory!")
+  endif()
+
   cmake_parse_arguments(__ARG "INSTALL_TO_PATH" "" "INSTALL_TO_SHARE" ${ARGN})
   # passing all unparsed arguments to ament_package()
 
