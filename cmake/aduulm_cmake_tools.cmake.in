@@ -355,7 +355,7 @@ macro(aduulm_add_ros2_python_binding target)
   endif()
 
   find_package(pybind11 REQUIRED)
-  pybind11_add_module(${target} ${ARG_UNPARSED_ARGUMENTS})
+  pybind11_add_module(${target} SYSTEM ${ARG_UNPARSED_ARGUMENTS})
 
   target_include_directories(${target}
     PUBLIC
