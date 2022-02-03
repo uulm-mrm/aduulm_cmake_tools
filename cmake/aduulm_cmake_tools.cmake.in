@@ -198,7 +198,7 @@ endmacro()
 
 macro(aduulm_generate_ros2_messages target)
   # Manually glob for files
-  file(GLOB ${PROJECT_NAME}_interface_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} msg/**/*.msg msg/*.msg srv/**/*.srv srv/*.srv action/**/*.action action/*.action)
+  file(GLOB_RECURSE ${PROJECT_NAME}_interface_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} msg/**/*.msg msg/*.msg srv/**/*.srv srv/*.srv action/**/*.action action/*.action)
   rosidl_generate_interfaces(
      ${target}
      ${${PROJECT_NAME}_interface_files}
