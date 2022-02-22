@@ -517,9 +517,10 @@ macro(aduulm_add_ros2_python_binding target)
       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:include>
   )
+  aduulm_filter_autolink_dependencies(${PROJECT_NAME}_FOUND_BUILD_DEPENDS ${PROJECT_NAME}_FOUND_BUILD_DEPENDS_FILTERED)
   ament_target_dependencies(${target}
     SYSTEM PUBLIC
-      ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS}
+      ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS_FILTERED}
   )
 
   install(TARGETS ${target}
@@ -544,9 +545,10 @@ macro(aduulm_create_ros2_package)
     ${${PROJECT_NAME}_BUILD_EXPORT_DEPENDS}
     ${${PROJECT_NAME}_BUILDTOOL_EXPORT_DEPENDS}
     ${${PROJECT_NAME}_EXEC_DEPENDS})
+  aduulm_filter_autolink_dependencies(${PROJECT_NAME}_FOUND_BUILD_DEPENDS ${PROJECT_NAME}_FOUND_BUILD_DEPENDS_FILTERED)
   foreach(_dep
       ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS}
-      ${${PROJECT_NAME}_FOUND_BUILDTOOL_DEPENDS})
+      ${${PROJECT_NAME}_FOUND_BUILDTOOL_DEPENDS_FILTERED})
     if(_dep IN_LIST _run_depends)
       ament_export_dependencies("${_dep}")
     endif()
