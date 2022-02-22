@@ -183,6 +183,31 @@ endmacro()
 
 # ROS2 convenience macros
 
+macro(aduulm_no_autolink_dependencies package_name)
+    list(APPEND ADUULM_NO_AUTOLINK_DEPENDENCIES ${package_name})
+endmacro()
+
+macro(aduulm_filter_autolink_dependencies deps filtered_deps)
+  # check auto_link_deps
+  foreach( package_name ${ADUULM_NO_AUTOLINK_DEPENDENCIES})
+    if(NOT (${package_name} IN_LIST ${deps}))
+      message(WARNING "package ${package_name} was specifically excluded from auto_link but is not used for auto_link anyway")
+    endif()
+  endforeach()
+
+  # filter list
+  if (ADUULM_NO_AUTOLINK_DEPENDENCIES)
+    foreach( package_name ${${deps}})
+      # append all deps which are not specifically excluded to the filtered list
+      if(NOT (${package_name} IN_LIST ADUULM_NO_AUTOLINK_DEPENDENCIES))
+        list(APPEND ${filtered_deps} ${package_name})
+      endif()
+    endforeach()
+  else()
+    set(${filtered_deps} ${${deps}})
+  endif()
+endmacro()
+
 macro(aduulm_init_ros2_package)
   find_package(ament_cmake REQUIRED)
   find_package(ament_cmake_auto REQUIRED)
@@ -393,9 +418,10 @@ macro(aduulm_add_ros2_library target)
       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:include>
   )
+  aduulm_filter_autolink_dependencies(${PROJECT_NAME}_FOUND_BUILD_DEPENDS ${PROJECT_NAME}_FOUND_BUILD_DEPENDS_FILTERED)
   aduulm_ros2_target_dependencies(${target}
     SYSTEM PUBLIC
-      ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS}
+      ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS_FILTERED}
   )
   if(NOT "${${PROJECT_NAME}_TARGET_DEPENDENCIES}" STREQUAL "")
     target_link_libraries(${target} PUBLIC ${${PROJECT_NAME}_TARGET_DEPENDENCIES})
@@ -454,9 +480,10 @@ macro(aduulm_add_ros2_executable target)
       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:include>
   )
+  aduulm_filter_autolink_dependencies(${PROJECT_NAME}_FOUND_BUILD_DEPENDS ${PROJECT_NAME}_FOUND_BUILD_DEPENDS_FILTERED)
   aduulm_ros2_target_dependencies(${target}
     SYSTEM PUBLIC
-      ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS}
+      ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS_FILTERED}
   )
   if(NOT "${${PROJECT_NAME}_TARGET_DEPENDENCIES}" STREQUAL "")
     target_link_libraries(${target} PUBLIC ${${PROJECT_NAME}_TARGET_DEPENDENCIES})
@@ -490,9 +517,10 @@ macro(aduulm_add_ros2_python_binding target)
       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:include>
   )
+  aduulm_filter_autolink_dependencies(${PROJECT_NAME}_FOUND_BUILD_DEPENDS ${PROJECT_NAME}_FOUND_BUILD_DEPENDS_FILTERED)
   ament_target_dependencies(${target}
     SYSTEM PUBLIC
-      ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS}
+      ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS_FILTERED}
   )
 
   install(TARGETS ${target}
@@ -517,9 +545,10 @@ macro(aduulm_create_ros2_package)
     ${${PROJECT_NAME}_BUILD_EXPORT_DEPENDS}
     ${${PROJECT_NAME}_BUILDTOOL_EXPORT_DEPENDS}
     ${${PROJECT_NAME}_EXEC_DEPENDS})
+  aduulm_filter_autolink_dependencies(${PROJECT_NAME}_FOUND_BUILD_DEPENDS ${PROJECT_NAME}_FOUND_BUILD_DEPENDS_FILTERED)
   foreach(_dep
       ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS}
-      ${${PROJECT_NAME}_FOUND_BUILDTOOL_DEPENDS})
+      ${${PROJECT_NAME}_FOUND_BUILDTOOL_DEPENDS_FILTERED})
     if(_dep IN_LIST _run_depends)
       ament_export_dependencies("${_dep}")
     endif()
