@@ -58,9 +58,9 @@ if(OpenCV_DIR)
   endif()
 endif()
 
-## TRITON
-if(TRITON_DIR)
-  add_library_path(TRITON ${TRITON_DIR}/lib)
+## TritonClient
+if(TritonClient_DIR)
+  add_library_path(TritonClient ${TritonClient_DIR}/../../../lib)
 endif()
 
 if(EXISTS /opt/intel/mkl/lib/intel64)
