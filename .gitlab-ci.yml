@@ -7,7 +7,7 @@ noetic-catkin_build-install:
   stage: build
   script:
     - build_repo_with_dependencies.sh gitlab_install
-    
+
 # Tests for Noetic without install
 noetic-catkin_build-no_install:
   image: mrm-git.e-technik.uni-ulm.de:4567/aduulm/docker_images/aduulm-ros-noetic:latest
@@ -15,13 +15,7 @@ noetic-catkin_build-no_install:
   script:
     - build_repo_with_dependencies.sh gitlab_no_install
 
-# Tests for Unicar Melodic with Install
-unicar-melodic-catkin_build-install:
-  image: mrm-git.e-technik.uni-ulm.de:4567/aduulm/docker_images/unicar-ros-melodic-ci:latest
-  stage: build
-  script:
-    - build_repo_with_dependencies.sh gitlab_install
-
+# Tests for ROS2 rolling
 rolling_install:
   image: mrm-git.e-technik.uni-ulm.de:4567/aduulm/docker_images/aduulm-ros2-rolling:latest
   stage: build
