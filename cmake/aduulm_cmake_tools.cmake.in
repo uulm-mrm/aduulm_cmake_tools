@@ -231,14 +231,14 @@ macro(aduulm_generate_ros2_messages target)
 endmacro()
 
 macro(aduulm_target_link_messages target interface_target)
-  # Sadly, rosidl_target_interfaces uses non-keyword link-libraries: https://github.com/ros2/rosidl/issues/400
-  # The following was also not merged yet: https://github.com/ros2/rosidl/pull/606
-
   set(typesupport_target ${interface_target}__rosidl_typesupport_cpp)
   add_dependencies(${target} ${interface_target})
-  get_target_property(include_directories ${typesupport_target} INTERFACE_INCLUDE_DIRECTORIES)
-  target_include_directories(${target} SYSTEM PUBLIC ${include_directories})
-  target_link_libraries(${target} PUBLIC ${typesupport_target})
+  get_target_property(_type ${target} TYPE)
+  set(_interface "PUBLIC")
+  if (${_type} STREQUAL "INTERFACE_LIBRARY")
+    set(_interface "INTERFACE")
+  endif()
+  target_link_libraries(${target} ${_interface} ${typesupport_target})
 endmacro()
 
 macro(aduulm_register_public_dependency_target target)
@@ -380,13 +380,19 @@ endfunction()
 
 macro(aduulm_add_ros2_library target)
   cmake_parse_arguments(ARG
-    "STATIC;SHARED;MODULE;EXCLUDE_FROM_ALL"
+    "STATIC;SHARED;MODULE;EXCLUDE_FROM_ALL;INTERFACE"
     "DIRECTORY"
     ""
     ${ARGN})
-  if(NOT ARG_DIRECTORY AND NOT ARG_UNPARSED_ARGUMENTS)
+  if(NOT ARG_DIRECTORY AND NOT ARG_UNPARSED_ARGUMENTS AND NOT ARG_INTERFACE)
     message(FATAL_ERROR "aduulm_add_ros2_library() called without any source "
       "files and without a DIRECTORY argument")
+  endif()
+  set(_interface "PUBLIC")
+  set(_interface2 "")
+  if(ARG_INTERFACE)
+    set(_interface "INTERFACE")
+    set(_interface2 "INTERFACE")
   endif()
 
   set(_source_files "")
@@ -409,28 +415,28 @@ macro(aduulm_add_ros2_library target)
   endif()
 
   # parse again to "remove" custom arguments
-  cmake_parse_arguments(ARG "" "DIRECTORY" "" ${ARGN})
-  add_library(${target} ${ARG_UNPARSED_ARGUMENTS} ${_source_files})
-  target_compile_definitions(${target} PUBLIC "-D${package_name}_VERSION=\"${package_version}\"")
+  cmake_parse_arguments(ARG "" "DIRECTORY;INTERFACE" "" ${ARGN})
+  add_library(${target} ${_interface2} ${ARG_UNPARSED_ARGUMENTS} ${_source_files})
+  target_compile_definitions(${target} ${_interface} "-D${package_name}_VERSION=\"${package_version}\"")
 
   target_include_directories(${target}
-    PUBLIC
+    ${_interface}
       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:include>
   )
   aduulm_filter_autolink_dependencies(${PROJECT_NAME}_FOUND_BUILD_DEPENDS ${PROJECT_NAME}_FOUND_BUILD_DEPENDS_FILTERED)
   aduulm_ros2_target_dependencies(${target}
-    SYSTEM PUBLIC
+    SYSTEM ${_interface}
       ${${PROJECT_NAME}_FOUND_BUILD_DEPENDS_FILTERED}
   )
   if(NOT "${${PROJECT_NAME}_TARGET_DEPENDENCIES}" STREQUAL "")
-    target_link_libraries(${target} PUBLIC ${${PROJECT_NAME}_TARGET_DEPENDENCIES})
+    target_link_libraries(${target} ${_interface} ${${PROJECT_NAME}_TARGET_DEPENDENCIES})
   endif()
   if(NOT "${${PROJECT_NAME}_EXTRA_LIBS}" STREQUAL "")
-    target_link_libraries(${target} PUBLIC ${${PROJECT_NAME}_EXTRA_LIBS})
+    target_link_libraries(${target} ${_interface} ${${PROJECT_NAME}_EXTRA_LIBS})
   endif()
   if(NOT "${${PROJECT_NAME}_EXTRA_INCS}" STREQUAL "")
-    target_include_directories(${target} SYSTEM PUBLIC ${${PROJECT_NAME}_EXTRA_INCS})
+    target_include_directories(${target} SYSTEM ${_interface} ${${PROJECT_NAME}_EXTRA_INCS})
   endif()
 
   list(APPEND ${PROJECT_NAME}_LIBRARIES "${target}")
@@ -563,7 +569,13 @@ macro(aduulm_create_ros2_package)
   list(APPEND ${PROJECT_NAME}_INCS_TMP ${${PROJECT_NAME}_EXTRA_INCS})
 
   # export and install all libraries
-  list(APPEND ${PROJECT_NAME}_LIBRARIES_TEST ${${PROJECT_NAME}_LIBRARIES})
+  foreach(_dep ${${PROJECT_NAME}_LIBRARIES})
+    get_target_property(_type ${_dep} TYPE)
+    if (NOT ${_type} STREQUAL "INTERFACE_LIBRARY")
+      list(APPEND ${PROJECT_NAME}_LIBRARIES_TEST ${_dep})
+      continue()
+    endif()
+  endforeach()
   foreach(_dep ${${PROJECT_NAME}_TARGET_DEPENDENCIES} ${${PROJECT_NAME}_EXTRA_LIBS})
     if (NOT TARGET ${_dep})
       list(APPEND ${PROJECT_NAME}_LIBRARIES_TEST ${_dep})
