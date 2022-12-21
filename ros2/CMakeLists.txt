@@ -66,5 +66,6 @@ endif()
 if(EXISTS /opt/intel/mkl/lib/intel64)
   add_library_path(MKL /opt/intel/mkl/lib/intel64)
 endif()
+
 ament_package(CONFIG_EXTRAS cmake/aduulm_cmake_tools.cmake.in)
-ament_generate_package_environment()
+# ament_generate_package_environment()
