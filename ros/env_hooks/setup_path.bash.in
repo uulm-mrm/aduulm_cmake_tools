@@ -1,6 +1,0 @@
-#!/usr/bin/env sh
-# generated from $(find source_library_paths)/env-hooks/setup.bash.in
-
-# source setup.sh from same directory as this file
-_LIB_SETUP_DIR=$(builtin cd "`dirname "${BASH_SOURCE[0]}"`" > /dev/null && pwd)
-. "$_LIB_SETUP_DIR/setup_@DIR_NAME@.sh"
