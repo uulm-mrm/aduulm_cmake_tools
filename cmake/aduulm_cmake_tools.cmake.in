@@ -536,7 +536,28 @@ macro(aduulm_add_ros2_python_binding target)
   )
 
   install(TARGETS ${target}
-    LIBRARY DESTINATION ${PYTHON_INSTALL_DIR}/ COMPONENT Runtime
+    LIBRARY DESTINATION ${PYTHON_INSTALL_DIR}/${PROJECT_NAME}_py/ COMPONENT Runtime
+  )
+endmacro()
+
+macro(aduulm_add_lib_python_binding target)
+  cmake_parse_arguments(ARG "" "" "" ${ARGN})
+  if(NOT ARG_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR
+      "aduulm_add_ros2_python_binding() must be invoked with at least one source file")
+  endif()
+
+  find_package(pybind11 REQUIRED)
+  pybind11_add_module(${target} ${ARG_UNPARSED_ARGUMENTS})
+
+  target_include_directories(${target}
+    PUBLIC
+      $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:include>
+  )
+
+  install(TARGETS ${target}
+    LIBRARY DESTINATION ${PYTHON_INSTALL_DIR}/${PROJECT_NAME}_py/ COMPONENT Runtime
   )
 endmacro()
 
