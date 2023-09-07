@@ -229,7 +229,17 @@ endmacro()
 
 macro(aduulm_generate_ros2_messages target)
   # Manually glob for files
-  file(GLOB_RECURSE ${PROJECT_NAME}_interface_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} msg/**/*.msg msg/*.msg srv/**/*.srv srv/*.srv action/**/*.action action/*.action)
+  set(${PROJECT_NAME}_interface_files "")
+  foreach(_type msg srv action)
+    file(GLOB_RECURSE _files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${_type}/**/*.${_type} ${_type}/*.${_type})
+    # first copy all files to dedicated msg/srv/action folders, so that no more subdirectories exist
+    # this is because otherwise the .msg/.srv/.action files end up in weird locations inside the install folder
+    # which trips up tools such as the rosbag recorder/writer.
+    # Subdirectories inside msg/srv/action seem not properly supported, maybe make a PR someday...
+    file(COPY ${_files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/aduulm_tmp/${_type}/)
+    file(GLOB_RECURSE _files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/aduulm_tmp/${_type}/*.${_type})
+    list(APPEND ${PROJECT_NAME}_interface_files ${_files})
+  endforeach()
   rosidl_generate_interfaces(
      ${target}
      ${${PROJECT_NAME}_interface_files}
