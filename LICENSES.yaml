@@ -1,0 +1,34 @@
+external:
+  - name: Matio find package script
+    files: cmake/Modules/FindMatio.cmake
+    copyright: 2011 Clement Creusot <creusot@cs.york.ac.uk>
+    license: osi_bsd
+    modified: false
+  - name: libFindMacros
+    files: cmake/Modules/LibFindMacros.cmake
+    copyright: Public Domain, originally written by Lasse Kärkkäinen <tronic>
+    version: 2.2
+    license: public_domain
+    url: https://github.com/Tronic/cmake-modules
+    modified: false
+  - name: ament_cmake_auto
+    copyright: 2014 Open Source Robotics Foundation, Inc.
+    files: cmake/aduulm_cmake_tools.cmake.in
+    license: Apache-2.0
+    url: https://github.com/ament/ament_cmake/tree/rolling/ament_cmake_auto
+    modified: true
+
+licenses:
+  osi_bsd:
+    Distributed under the OSI-approved BSD License (the "License");
+    see accompanying file Copyright.txt for details.
+
+    This software is distributed WITHOUT ANY WARRANTY; without even the
+    implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the License for more information.
+    (To distribute this file outside of CMake, substitute the full
+     License text for the above reference.)
+  public_domain:
+    Public Domain, originally written by Lasse Kärkkäinen <tronic>
+    Maintained at https://github.com/Tronic/cmake-modules
+    Please send your improvements as pull requests on Github.
