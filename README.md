@@ -10,9 +10,11 @@ This package offers some cmake macros simplifying the creation of packages for R
 
 The source code is not officially released and is only for internal use.
 
-**Author(s): Jan Strohbeck, Martin Herrmann   
-Maintainer:  Jan Strohbeck,  jan.strohbeck@uni-ulm.de  
-Maintainer:  Martin Herrmann,  Martin.Herrmann@uni-ulm.de  
+**Author(s): Jan Strohbeck, Thomas Wodtko, Martin Herrmann   
+Maintainer:  
+Thomas Wodtko, thomas.wodtko@uni-ulm.de  
+Robin Dehler, robin.dehler@uni-ulm.de  
+Michael Kösel, michael.koesel@uni-ulm.de  
 Affiliation: Institute of Measurements, Control and Microtechnology, Ulm University**
 
 The aduulm_cmake_tools package has been tested under [ROS] Kinetic and Ubuntu 16.04 as under [ROS] melodic and Ubuntu 18.04 and ADTF with Ubuntu 16.04. 
