@@ -8,11 +8,16 @@ License
 
 License: Apache 2.0
 
-Authors: Jan Strohbeck, Martin Herrmann, Thomas Wodtko (MRM)
+Affiliation: Institute of Measurement, Control and Microtechnology, Ulm University.
 
-Maintainers: Jan Strohbeck, Thomas Wodtko, Robin Dehler, Michael Kösel (MRM)
+### Aduulm Repository Metadata
 
-Affiliation: Institute of Measurement, Control and Microtechnology (MRM), Ulm University
+- last updated: 01/2024
+- name: aduulm_cmake_tools
+- category: tooling
+- maintainers: Jan Strohbeck, Thomas Wodtko, Robin Dehler, Michael Kösel
+- license: Apache 2.0
+- HW dependencies: none
 
 Dependencies
 ============
