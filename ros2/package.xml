@@ -8,7 +8,7 @@
   <maintainer email="thomas.wodtko@uni-ulm.de">Thomas Wodtko</maintainer>
   <maintainer email="robin.dehler@uni-ulm.de">Robin Dehler</maintainer>
   <maintainer email="michael.koesel@uni-ulm.de">Michael Kösel</maintainer>
-  <license>Proprietary, (c) 2018 Ulm University, Institute of Measurement, Control and Microtechnology</license>
+  <license>Apache-2.0</license>
 
   <!-- tool for building workspace -->
   <buildtool_depend>ament_cmake</buildtool_depend>
