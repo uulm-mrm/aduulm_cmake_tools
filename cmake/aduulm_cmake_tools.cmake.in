@@ -22,10 +22,20 @@ endif()
 
 set(ADUULM_CMAKE_TOOLS_DIR "@CMAKE_CURRENT_LIST_DIR@/..")
 
-if(${CMAKE_VERSION} VERSION_GREATER "3.18.0")
-  cmake_policy(SET CMP0104 OLD)
-  SET(CMAKE_CUDA_ARCHITECTURES 75;86)
-endif()
+
+macro(aduulm_set_cmake_policies)
+  if(${CMAKE_VERSION} VERSION_GREATER "3.18.0")
+    SET(CMAKE_CUDA_ARCHITECTURES 75;86)
+  endif()
+
+  if(${CMAKE_VERSION} VERSION_GREATER "3.27.0")
+    # old policy 0146 allows to use find_package(CUDA) which is still used by openCV (07/24 wodtko)
+    cmake_policy(SET CMP0146 OLD)
+    # FLANN is using a OLD variable name (07/24 wodtko)
+    cmake_policy(SET CMP0144 OLD)
+  endif()
+endmacro()
+aduulm_set_cmake_policies()
 
 # Set IS_ROS_DEVEL var
 STRING(REGEX MATCH "/devel$" IS_ROS_DEVEL "${CMAKE_INSTALL_PREFIX}")
@@ -215,6 +225,7 @@ macro(aduulm_filter_autolink_dependencies deps filtered_deps)
 endmacro()
 
 macro(aduulm_init_ros2_package)
+  aduulm_set_cmake_policies()
   find_package(ament_cmake REQUIRED)
   find_package(ament_cmake_auto REQUIRED)
   find_package(ament_cmake_python REQUIRED)
@@ -354,7 +365,11 @@ function(aduulm_ros2_target_dependencies target)
           # un-set NO_SYSTEM_FROM_IMPORTED property that was set due to
           # CMAKE_NO_SYSTEM_FROM_IMPORTED having been set by mrt_cmake_modules
           if(TARGET ${library})
-            set_target_properties(${library} PROPERTIES NO_SYSTEM_FROM_IMPORTED FALSE)
+            get_property(aliased_target TARGET "${library}" PROPERTY ALIASED_TARGET)
+            # if target is alias, target property may not be set...
+            if ("${aliased_target}" STREQUAL "")
+                set_target_properties(${library} PROPERTIES NO_SYSTEM_FROM_IMPORTED FALSE)
+            endif()
           endif()
           list(APPEND libraries ${library})
         endforeach()
